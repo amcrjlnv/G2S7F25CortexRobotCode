@@ -3,20 +3,19 @@
 
 task main()
 {
-	clearTimer(T1);
-	motor[port1] = 127;
+	motor[motor1] = 127;
 	int lastdir = 127;
 	int lasttouch = 0;
 
 	while (true) {
-		if (lasttouch == 0 && SensorValue[touch1] == 1) { // Button pressed?
-				motor[port1] = 0;
+		if (lasttouch == 0 && SensorValue[touch1] == 1) {
+				motor[motor1] = 0;
 		}
-		if (lasttouch == 1 && SensorValue[touch1] == 0) { // Button unpressed?
+		if (lasttouch == 1 && SensorValue[touch1] == 0) {
 				lastdir = -lastdir;
-				motor[port1] = lastdir * 127;
+				motor[motor1] = lastdir * 127;
 		}
 		lasttouch = SensorValue[touch1];
-		delay(1);
+		delay(50);
 	}
 }

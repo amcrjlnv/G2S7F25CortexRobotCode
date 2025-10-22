@@ -2,14 +2,13 @@
 
 task main()
 {
-	clearTimer(T1);
-	motor[port1] = 0;
+	motor[motor1] = 0;
 	int direction = 1;
 	int power = 0;
-	while (true) { // Would change direction ever 2.5-3s
+	while (true) { // Would change direction every 2.5-3s
 		power += direction;
 		if (sgn(power) * power == 127) direction = -direction;
-		motor[port1] = power;
+		motor[motor1] = power;
 		delay(10);
 	}
 }
