@@ -136,6 +136,7 @@ task main(){
 
 	long rotation_sum = 0;
 	clearTimer(T2);
+	clearTimer(T1);
 	while(true){
 		switch (phase) {
 			case PHASE_GOTO_RED:
@@ -148,7 +149,7 @@ task main(){
 				Move();
 				if (SensorValue[beaconswitch]) {
 					phase = PHASE_ACTIVATE_RED;
-					clearTimer(T2);
+					clearTimer(T1);
 				}
 				break;
 			case PHASE_ACTIVATE_RED:
@@ -162,7 +163,7 @@ task main(){
 				delay(500);
 				motor[armMotor] = 0;
 				ReadPD();
-				if (PD_sum < 2000 || time1[T2] > 5000) phase = PHASE_REVERSE_RED;
+				if (PD_sum < 2000 || time1[T1] > 5000) phase = PHASE_REVERSE_RED;
 				break;
 			case PHASE_REVERSE_RED:
 				rotation_sum += (motor[rightMotor] + motor[leftMotor]) * time1[T2];
