@@ -102,9 +102,6 @@ void Move(){
 		speed = 0;//serach mode=>no forward motion
 		steer = -spin_speed;//search mode =>spin
 	}
-	if(PD_sum > slow_level){//Beacon is near!
-		speed = slow_speed;//slow down
-	}
 	// deleted the stop statement when the beacon is found, because we'll	 use the limit switch to stop the motors	which is more reliable.
 
 
@@ -125,8 +122,8 @@ task main(){
 	slow_level = 5000;// used in move
 	stop_level = 6000;//used in move
 	expose_time = 5; // expose time was changed from 3ms to 5ms (3ms in easyC -> 5ms in RobotC)
-	steer_sensitivity = 20;//used in move
-	forward_speed = 90;//forward speed , used in move
+	steer_sensitivity = 70;//used in move
+	forward_speed = 100;//forward speed , used in move
 	slow_speed = 25;//slow speed , used in move
 	spin_speed = 50;//spin speed (for searching mode),used in move
 	SensorValue[digital10] = freq;// turn to 1KHz(red beacon)
@@ -157,9 +154,9 @@ task main(){
 				clearTimer(T2);
 				motor[leftMotor] = 0;
 				motor[rightMotor] = 0;
-				motor[armMotor] = -127;
-				delay(750);
 				motor[armMotor] = 127;
+				delay(750);
+				motor[armMotor] = -127;
 				delay(500);
 				motor[armMotor] = 0;
 				ReadPD();
@@ -192,10 +189,11 @@ task main(){
 				phase = PHASE_RETURN_HOME;
 				break;
 			case PHASE_RETURN_HOME:
+				if (SensorValue[sonar] < 0) break;
 				motor[leftMotor] = -forward_speed;
 				motor[rightMotor] = forward_speed;
 				if (SensorValue[sonar] < 15) {
-					motor[leftMotor] = -1;
+					motor[leftMotor] = -50;
 					motor[rightMotor] = forward_speed;
 				}
 				delay(1);
@@ -205,6 +203,7 @@ task main(){
 		datalogAddValue(1, motor[leftMotor]);
 		datalogAddValue(2, motor[rightMotor]);
 		datalogAddValue(3, phase);
+		datalogAddValue(4, SensorValue[sonar]);
 	}
 
 	end_all:
