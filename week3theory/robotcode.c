@@ -118,7 +118,7 @@ The GOBEACON main program essentially sets up all the configuration variables an
 execute the three routines: Read_PD, find_max, and move.*/
 task main(){
 	freq = 0; // 0 = 1khz (red) 1 = 10khz (green)
-	ambient_level = 500; // used in 'move'
+	ambient_level = 150; // used in 'move'
 	slow_level = 5000;// used in move
 	stop_level = 6000;//used in move
 	expose_time = 5; // expose time was changed from 3ms to 5ms (3ms in easyC -> 5ms in RobotC)
@@ -152,8 +152,8 @@ task main(){
 			case PHASE_ACTIVATE_RED:
 				rotation_sum += (motor[rightMotor] + motor[leftMotor]) * time1[T2];
 				clearTimer(T2);
-				motor[leftMotor] = 0;
-				motor[rightMotor] = 0;
+				motor[leftMotor] = -50;
+				motor[rightMotor] = 50;
 				motor[armMotor] = 127;
 				delay(750);
 				motor[armMotor] = -127;
@@ -168,9 +168,12 @@ task main(){
 				motor[leftMotor] = 127;
 				motor[rightMotor] = -127;
 				delay(750); // TODO: make better of necessary
+				motor[leftMotor] = -127;
+				delay(500);
 				phase = PHASE_GOTO_GREEN;
 				break;
 			case PHASE_GOTO_GREEN:
+				ambient_level = 100;
 				freq = 1; // switch read frequency to green
 				SensorValue[digital10] = freq;
 				ReadPD();
@@ -181,20 +184,26 @@ task main(){
 				if (SensorValue[beaconswitch]) phase = PHASE_PREEMPTIVE_ROTATION;
 				break;
 			case PHASE_PREEMPTIVE_ROTATION:
-				int rotationSign = sgn(rotation_sum);
+				// SKIP
+				/*int rotationSign = sgn(rotation_sum);
 				if (rotationSign < 0) // leftMotor dominated first half
 					motor[rightMotor] = 127;
 			  else motor[leftMotor] = 127;
 				delay(rotation_sum/127);
+				phase = PHASE_RETURN_HOME;*/
+				motor[armMotor] = 127;
+				delay(500);
+				motor[armMotor] = 10;
 				phase = PHASE_RETURN_HOME;
 				break;
 			case PHASE_RETURN_HOME:
 				if (SensorValue[sonar] < 0) break;
-				motor[leftMotor] = -forward_speed;
-				motor[rightMotor] = forward_speed;
+				motor[leftMotor] = forward_speed;
+				motor[rightMotor] = -forward_speed;
 				if (SensorValue[sonar] < 15) {
-					motor[leftMotor] = -50;
+					motor[leftMotor] = forward_speed;
 					motor[rightMotor] = forward_speed;
+					delay(500);
 				}
 				delay(1);
 
