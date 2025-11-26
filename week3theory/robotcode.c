@@ -94,7 +94,7 @@ This function also calculates the speed, steering sensitivity and the heading di
 
 void Move(){
 	int tempSpeed = 0;
-	int error = round(3.5-avg_no);//heading direction error , if PD4==max_no, then no error
+	int error = round(3.5-avg_no);//heading direction error , if PD4==max_no, then no error; TODO: correct bias, currently 0.5
 	int steer = error * steer_sensitivity;//steering effort is proportioinal to heading error
 	int speed = forward_speed;//forward speed (normal speed)
 
@@ -123,8 +123,8 @@ task main(){
 	stop_level = 6000;//used in move
 	expose_time = 5; // expose time was changed from 3ms to 5ms (3ms in easyC -> 5ms in RobotC)
 	steer_sensitivity = 70;//used in move
-	forward_speed = 100;//forward speed , used in move
-	slow_speed = 25;//slow speed , used in move
+	forward_speed = 127;//forward speed , used in move
+	slow_speed = 60;//slow speed , used in move
 	spin_speed = 50;//spin speed (for searching mode),used in move
 	SensorValue[digital10] = freq;// turn to 1KHz(red beacon)
 
@@ -155,21 +155,23 @@ task main(){
 				motor[leftMotor] = -50;
 				motor[rightMotor] = 50;
 				motor[armMotor] = 127;
-				delay(750);
+				delay(500);
 				motor[armMotor] = -127;
+				if (PD_sum < 2000 || time1[T1] > 5000) {
+					phase = PHASE_REVERSE_RED;
+					break;
+				}
 				delay(500);
 				motor[armMotor] = 0;
-				ReadPD();
-				if (PD_sum < 2000 || time1[T1] > 5000) phase = PHASE_REVERSE_RED;
 				break;
 			case PHASE_REVERSE_RED:
 				rotation_sum += (motor[rightMotor] + motor[leftMotor]) * time1[T2];
 				clearTimer(T2);
 				motor[leftMotor] = 127;
 				motor[rightMotor] = -127;
-				delay(750); // TODO: make better of necessary
-				motor[leftMotor] = -127;
 				delay(500);
+				motor[armMotor] = 0;
+				delay(1000); // TODO: make better as necessary
 				phase = PHASE_GOTO_GREEN;
 				break;
 			case PHASE_GOTO_GREEN:
@@ -178,6 +180,8 @@ task main(){
 				SensorValue[digital10] = freq;
 				ReadPD();
 				Find_max();
+				forward_speed = 100;
+				steer_sensitivity = 30;
 				rotation_sum += (motor[rightMotor] + motor[leftMotor]) * time1[T2];
 				clearTimer(T2);
 				Move();
@@ -197,13 +201,17 @@ task main(){
 				phase = PHASE_RETURN_HOME;
 				break;
 			case PHASE_RETURN_HOME:
+				forward_speed = 127;
 				if (SensorValue[sonar] < 0) break;
 				motor[leftMotor] = forward_speed;
 				motor[rightMotor] = -forward_speed;
 				if (SensorValue[sonar] < 15) {
-					motor[leftMotor] = forward_speed;
+					motor[leftMotor] = -forward_speed;
 					motor[rightMotor] = forward_speed;
 					delay(500);
+					motor[leftMotor] = forward_speed;
+					motor[rightMotor] = forward_speed;
+					delay(750);
 				}
 				delay(1);
 
