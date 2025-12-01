@@ -94,7 +94,7 @@ This function also calculates the speed, steering sensitivity and the heading di
 
 void Move(){
 	int tempSpeed = 0;
-	int error = round(3.5-avg_no);//heading direction error , if PD4==max_no, then no error; TODO: correct bias, currently 0.5
+	int error = round(3.25-avg_no);//heading direction error , if PD4==max_no, then no error; TODO: correct bias, currently 0.25
 	int steer = error * steer_sensitivity;//steering effort is proportioinal to heading error
 	int speed = forward_speed;//forward speed (normal speed)
 
@@ -157,6 +157,8 @@ task main(){
 				motor[armMotor] = 127;
 				delay(500);
 				motor[armMotor] = -127;
+				delay(250);
+				ReadPD();
 				if (PD_sum < 2000 || time1[T1] > 5000) {
 					phase = PHASE_REVERSE_RED;
 					break;
@@ -171,7 +173,7 @@ task main(){
 				motor[rightMotor] = -127;
 				delay(500);
 				motor[armMotor] = 0;
-				delay(1000); // TODO: make better as necessary
+				delay(500); // TODO: make better as necessary
 				phase = PHASE_GOTO_GREEN;
 				break;
 			case PHASE_GOTO_GREEN:
